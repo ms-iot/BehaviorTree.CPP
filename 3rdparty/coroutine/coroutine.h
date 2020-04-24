@@ -94,6 +94,10 @@ struct Ordinator
         current = 0;
         stack_size = ss;
         fiber = ConvertThreadToFiber(nullptr);
+        if (nullptr == fiber)
+        {
+            fiber = GetCurrentFiber();
+        }
     }
 
     ~Ordinator()
@@ -103,10 +107,15 @@ struct Ordinator
     }
 };
 
-thread_local static Ordinator ordinator;
+static Ordinator& get_ordinator()
+{
+    thread_local static Ordinator _ordinator;
+    return _ordinator;
+}
 
 inline routine_t create(std::function<void()> f)
 {
+    Ordinator &ordinator = get_ordinator();
     Routine* routine = new Routine(f);
 
     if (ordinator.indexes.empty())
@@ -126,6 +135,7 @@ inline routine_t create(std::function<void()> f)
 
 inline void destroy(routine_t id)
 {
+    Ordinator &ordinator = get_ordinator();
     Routine* routine = ordinator.routines[id - 1];
     assert(routine != nullptr);
 
@@ -136,6 +146,7 @@ inline void destroy(routine_t id)
 
 inline void __stdcall entry(LPVOID)
 {
+    Ordinator &ordinator = get_ordinator();
     routine_t id = ordinator.current;
     Routine* routine = ordinator.routines[id - 1];
     assert(routine != nullptr);
@@ -150,6 +161,7 @@ inline void __stdcall entry(LPVOID)
 
 inline ResumeResult resume(routine_t id)
 {
+    Ordinator &ordinator = get_ordinator();
     assert(ordinator.current == 0);
 
     Routine* routine = ordinator.routines[id - 1];
@@ -176,6 +188,7 @@ inline ResumeResult resume(routine_t id)
 
 inline void yield()
 {
+    Ordinator &ordinator = get_ordinator();
     routine_t id = ordinator.current;
     Routine* routine = ordinator.routines[id - 1];
     if (routine == nullptr)
@@ -189,6 +202,7 @@ inline void yield()
 
 inline routine_t current()
 {
+    Ordinator &ordinator = get_ordinator();
     return ordinator.current;
 }
 
