@@ -10,6 +10,7 @@ endif()
 
 if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    add_compile_options(/wd4702)
 endif()
 
 if( MINGW )
