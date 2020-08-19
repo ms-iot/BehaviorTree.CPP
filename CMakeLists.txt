@@ -206,7 +206,8 @@ endif()
 if (WIN32)
     set(CMAKE_DEBUG_POSTFIX "d")
     list(APPEND BT_SOURCE src/shared_library_WIN.cpp )
-    add_library(${BEHAVIOR_TREE_LIBRARY} STATIC ${BT_SOURCE} )
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    add_library(${BEHAVIOR_TREE_LIBRARY} SHARED ${BT_SOURCE} )
 endif()
 
 if( ZMQ_FOUND )
@@ -229,7 +230,7 @@ if( ZMQ_FOUND )
 endif()
 
 if(MSVC)
-    target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE /W4 /WX)
+    target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE /W4)
 else()
     target_compile_options(${BEHAVIOR_TREE_LIBRARY} PRIVATE
         -Wall -Wextra -Werror=return-type)
